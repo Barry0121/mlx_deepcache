@@ -1,0 +1,13 @@
+================= DiffusionCLIP
+
+After ssh cslab, open a interactive shell for GPU (Do this for setting up as well!!)
+
+Example: srun --partition biggpunodes -c 8 --mem=16G --gres=gpu:1 -t 1:0:0 --pty bash --login
+
+I keep all code on cslab at the location "/w/340/zexinxue/mobile_diffusion", everyone has read and write access to this directory.
+
+Use `conda activate diffusionclip` to activate the environment.
+
+Some notes about installation: I changed pytorch version from 1.7.1 to 2.1.
+
+================== DeepCache
