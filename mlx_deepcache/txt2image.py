@@ -15,7 +15,7 @@ if __name__ == "__main__":
         description="Generate images from a textual prompt using stable diffusion"
     )
     parser.add_argument("prompt")
-    parser.add_argument("--model", choices=["sd", "sdxl"], default="sdxl")
+    parser.add_argument("--model", choices=["sd", "sdxl"], default="sd")
     parser.add_argument("--n_images", type=int, default=4)
     parser.add_argument("--steps", type=int)
     parser.add_argument("--cfg", type=float)
@@ -30,18 +30,18 @@ if __name__ == "__main__":
     parser.add_argument("--verbose", "-v", action="store_true")
 
     # DeepCache Hyperparameter
-    parser.add_argument("--cache_interval", type=int,
+    parser.add_argument("--cache_interval", type=int, default=1,
                         help="N, number of interval to use the cached output.")
-    parser.add_argument("--cache_layer_id", type=int,
+    parser.add_argument("--cache_layer_id", type=int, default=1,
                         help="m, unet branch to apply our cache.")
-    parser.add_argument("--cache_block_id", type=int,
-                        help="Id of the up-sampling block to cache.")
-    parser.add_argument("--uniform", type=bool,
+    # parser.add_argument("--cache_block_id", type=int,
+    #                     help="Id of the up-sampling block to cache.")
+    parser.add_argument("--uniform", type=bool, default=False,
                         help="Sampling strategy for N step caching.")
-    parser.add_argument("--center", type=int,
+    parser.add_argument("--center", type=int, default=15,
                         help="Center timestep of the frequency distribution.")
-    parser.add_argument(
-        "--pow", type=float, help="Power value to determine the shape of the frequency distribution.")
+    parser.add_argument("--pow", type=float, default=1.4,
+                        help="Power value to determine the shape of the frequency distribution.")
 
     args = parser.parse_args()
 
@@ -76,6 +76,12 @@ if __name__ == "__main__":
         num_steps=args.steps,
         seed=args.seed,
         negative_text=args.negative_prompt,
+        # deepcache arguments
+        cache_layer_id=args.cache_layer_id,
+        cache_interval=args.cache_interval,
+        uniform=args.uniform,
+        center=args.center,
+        power=args.pow
     )
     for x_t in tqdm(latents, total=args.steps):
         mx.eval(x_t)

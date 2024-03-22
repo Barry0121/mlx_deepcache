@@ -15,7 +15,7 @@ if __name__ == "__main__":
         description="Generate images from a textual prompt using stable diffusion"
     )
     parser.add_argument("prompt")
-    parser.add_argument("--model", choices=["sd", "sdxl"], default="sdxl")
+    parser.add_argument("--model", choices=["sd", "sdxl"], default="sd")
     parser.add_argument("--n_images", type=int, default=4)
     parser.add_argument("--steps", type=int)
     parser.add_argument("--cfg", type=float)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     # Decode them into images
     decoded = []
     for i in tqdm(range(0, args.n_images, args.decoding_batch_size)):
-        decoded.append(sd.decode(x_t[i : i + args.decoding_batch_size]))
+        decoded.append(sd.decode(x_t[i: i + args.decoding_batch_size]))
         mx.eval(decoded[-1])
     peak_mem_overall = mx.metal.get_peak_memory() / 1024**3
 
@@ -88,7 +88,8 @@ if __name__ == "__main__":
     x = mx.concatenate(decoded, axis=0)
     x = mx.pad(x, [(0, 0), (8, 8), (8, 8), (0, 0)])
     B, H, W, C = x.shape
-    x = x.reshape(args.n_rows, B // args.n_rows, H, W, C).transpose(0, 2, 1, 3, 4)
+    x = x.reshape(args.n_rows, B // args.n_rows,
+                  H, W, C).transpose(0, 2, 1, 3, 4)
     x = x.reshape(args.n_rows * H, B // args.n_rows * W, C)
     x = (x * 255).astype(mx.uint8)
 

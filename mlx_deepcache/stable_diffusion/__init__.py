@@ -2,6 +2,7 @@
 
 import time
 from typing import Optional, Tuple
+import numpy as np
 
 import mlx.core as mx
 
@@ -14,7 +15,22 @@ from .model_io import (
     load_unet,
 )
 from .sampler import SimpleEulerAncestralSampler, SimpleEulerSampler
-from .deepcache_helper import sample_from_quad_center
+
+
+def sample_from_quad_center(total_numbers, n_samples, center, power=1.2):
+    while power > 1:
+        # Generate linearly spaced values between 0 and a max value
+        x_values = np.linspace((-center)**(1/power),
+                               (total_numbers-center)**(1/power), n_samples+1)
+        indices = [0] + \
+            [int(x+center) for x in np.unique(np.int32(x_values**power))[1:-1]]
+        if len(indices) == n_samples:
+            break
+        power -= 0.02
+    if power <= 1:
+        raise ValueError(
+            "Cannot find suitable pow. Please adjust n_samples or decrease center.")
+    return mx.array(indices), power
 
 
 class StableDiffusion:
@@ -65,13 +81,22 @@ class StableDiffusion:
 
         return conditioning
 
+    # DeepCache function!
     def _denoising_step(
-        self, x_t, t, t_prev, conditioning, cfg_weight: float = 7.5, text_time=None
+        self,
+        x_t,
+        t,
+        t_prev,
+        conditioning,
+        cfg_weight: float = 7.5,
+        text_time=None,
+        cache_layer_id: int = None,
+        cache_features: int = None
     ):
         x_t_unet = mx.concatenate([x_t] * 2, axis=0) if cfg_weight > 1 else x_t
         t_unet = mx.broadcast_to(t, [len(x_t_unet)])
-        eps_pred = self.unet(
-            x_t_unet, t_unet, encoder_x=conditioning, text_time=text_time
+        eps_pred, cache_features = self.unet(
+            x_t_unet, t_unet, encoder_x=conditioning, text_time=text_time, cache_layer_id=cache_layer_id, cache_features=cache_features
         )
 
         if cfg_weight > 1:
@@ -80,9 +105,9 @@ class StableDiffusion:
 
         x_t_prev = self.sampler.step(eps_pred, x_t, t, t_prev)
 
-        return x_t_prev
+        return x_t_prev, cache_features
 
-    # TODO: Add DeepCache function here!!!!
+    # DeepCache function!
     def _denoising_loop(
         self,
         x_T,
@@ -91,13 +116,39 @@ class StableDiffusion:
         num_steps: int = 50,
         cfg_weight: float = 7.5,
         text_time=None,
+        cache_layer_id: int = None,
+        cache_interval: int = None,
+        uniform: bool = True,
+        center: int = None,
+        power: float = None,
     ):
         x_t = x_T
-        for t, t_prev in self.sampler.timesteps(
+        cache_features = None  # Store deepcache features
+
+        # Generate deepcache schedule according to input arguments
+        if cache_interval == 1:
+            interval_seq = mx.arange(num_steps)
+        else:
+            if uniform:
+                interval_seq = mx.arange(0, num_steps, cache_interval)
+            else:
+                num_slow_step = num_steps//cache_interval
+                if num_steps % cache_interval != 0:
+                    num_slow_step += 1
+
+                interval_seq, power = sample_from_quad_center(
+                    num_steps, num_slow_step, center=center, power=power)
+        interval_seq = mx.sort(interval_seq)
+
+        for i, (t, t_prev) in enumerate(self.sampler.timesteps(
             num_steps, start_time=T, dtype=self.dtype
-        ):
-            x_t = self._denoising_step(
-                x_t, t, t_prev, conditioning, cfg_weight, text_time
+        )):
+            # Clear cache to begin each deepcache interval
+            if i in interval_seq:
+                cache_features = None
+
+            x_t, cache_features = self._denoising_step(
+                x_t, t, t_prev, conditioning, cfg_weight, text_time, cache_layer_id, cache_features
             )
             yield x_t
 
@@ -110,6 +161,12 @@ class StableDiffusion:
         negative_text: str = "",
         latent_size: Tuple[int] = (64, 64),
         seed=None,
+        # deepcache arguments
+        cache_layer_id: int = None,
+        cache_interval: int = None,
+        uniform: bool = True,
+        center: int = None,
+        power: float = None,
     ):
         # Set the PRNG state
         seed = int(time.time()) if seed is None else seed
@@ -126,9 +183,13 @@ class StableDiffusion:
         )
 
         # Perform the denoising loop
-        # TODO: Add DeepCache function in this function
         yield from self._denoising_loop(
-            x_T, self.sampler.max_time, conditioning, num_steps, cfg_weight
+            x_T, self.sampler.max_time, conditioning, num_steps, cfg_weight, None,
+            cache_layer_id,
+            cache_interval,
+            uniform,
+            center,
+            power,
         )
 
     def generate_latents_from_image(

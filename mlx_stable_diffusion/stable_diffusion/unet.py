@@ -95,7 +95,8 @@ class Transformer2D(nn.Module):
     ):
         super().__init__()
 
-        self.norm = nn.GroupNorm(norm_num_groups, in_channels, pytorch_compatible=True)
+        self.norm = nn.GroupNorm(
+            norm_num_groups, in_channels, pytorch_compatible=True)
         self.proj_in = nn.Linear(in_channels, model_dims)
         self.transformer_blocks = [
             TransformerBlock(model_dims, num_heads, memory_dims=encoder_dims)
@@ -142,7 +143,8 @@ class ResnetBlock2D(nn.Module):
         )
         if temb_channels is not None:
             self.time_emb_proj = nn.Linear(temb_channels, out_channels)
-        self.norm2 = nn.GroupNorm(groups, out_channels, pytorch_compatible=True)
+        self.norm2 = nn.GroupNorm(
+            groups, out_channels, pytorch_compatible=True)
         self.conv2 = nn.Conv2d(
             out_channels, out_channels, kernel_size=3, stride=1, padding=1
         )
@@ -190,10 +192,13 @@ class UNetBlock2D(nn.Module):
 
         # Prepare the in channels list for the resnets
         if prev_out_channels is None:
-            in_channels_list = [in_channels] + [out_channels] * (num_layers - 1)
+            in_channels_list = [in_channels] + \
+                [out_channels] * (num_layers - 1)
         else:
-            in_channels_list = [prev_out_channels] + [out_channels] * (num_layers - 1)
-            res_channels_list = [out_channels] * (num_layers - 1) + [in_channels]
+            in_channels_list = [prev_out_channels] + \
+                [out_channels] * (num_layers - 1)
+            res_channels_list = [out_channels] * \
+                (num_layers - 1) + [in_channels]
             in_channels_list = [
                 a + b for a, b in zip(in_channels_list, res_channels_list)
             ]
@@ -244,15 +249,21 @@ class UNetBlock2D(nn.Module):
         residual_hidden_states=None,
     ):
         output_states = []
-
+        print("resnet size:" + str(len(self.resnets)))
+        print("X at initial: ", x.shape)
         for i in range(len(self.resnets)):
             if residual_hidden_states is not None:
-                x = mx.concatenate([x, residual_hidden_states.pop()], axis=-1)
+                print(len(residual_hidden_states))
+                hid = residual_hidden_states.pop()
+                print([len(r) for r in hid])
+                x = mx.concatenate([x, hid], axis=-1)
+                print(x.shape)
 
             x = self.resnets[i](x, temb)
 
             if "attentions" in self:
-                x = self.attentions[i](x, encoder_x, attn_mask, encoder_attn_mask)
+                x = self.attentions[i](
+                    x, encoder_x, attn_mask, encoder_attn_mask)
 
             output_states.append(x)
 
@@ -284,7 +295,8 @@ class UNetModel(nn.Module):
             config.block_out_channels[0],
             max_freq=1,
             min_freq=math.exp(
-                -math.log(10000) + 2 * math.log(10000) / config.block_out_channels[0]
+                -math.log(10000) + 2 * math.log(10000) /
+                config.block_out_channels[0]
             ),
             scale=1.0,
             cos_first=True,
@@ -382,7 +394,8 @@ class UNetModel(nn.Module):
             for i, (in_channels, out_channels, prev_out_channels) in reversed(
                 list(
                     enumerate(
-                        zip(block_channels, block_channels[1:], block_channels[2:])
+                        zip(block_channels,
+                            block_channels[1:], block_channels[2:])
                     )
                 )
             )
@@ -426,7 +439,7 @@ class UNetModel(nn.Module):
 
         # Run the downsampling part of the unet
         residuals = [x]
-        for block in self.down_blocks:
+        for i, block in enumerate(self.down_blocks):
             x, res = block(
                 x,
                 encoder_x=encoder_x,
@@ -436,13 +449,23 @@ class UNetModel(nn.Module):
             )
             residuals.extend(res)
 
+            print("down-sample layer: ", i)
+            print("res: ", [len(r) for r in res])
+            print(len(residuals))
+
         # Run the middle part of the unet
         x = self.mid_blocks[0](x, temb)
         x = self.mid_blocks[1](x, encoder_x, attn_mask, encoder_attn_mask)
         x = self.mid_blocks[2](x, temb)
+        # print("residuals details")
+        # print(residuals)
 
         # Run the upsampling part of the unet
-        for block in self.up_blocks:
+        for i, block in enumerate(self.up_blocks):
+            print("(store cache) up-sample layer: ",
+                  len(self.up_blocks) - i - 1)
+            print("X: ", x.shape)
+
             x, _ = block(
                 x,
                 encoder_x=encoder_x,
