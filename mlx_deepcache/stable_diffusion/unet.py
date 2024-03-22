@@ -476,7 +476,7 @@ class UNetModel(nn.Module):
                 # Cache output from the up-sample layer before specified target layer
                 if i == len(self.up_blocks) - cache_layer_id - 2:
                     cache_features = x
-                    print("cache_feature: ", cache_features.shape)
+                    # print("cache_feature: ", cache_features.shape)
                     # cache_features = res[-1]
 
         # Retrieve cached features and apply to up-sample branch after blocking further down-sample branch

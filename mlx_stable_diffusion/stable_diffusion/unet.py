@@ -249,15 +249,15 @@ class UNetBlock2D(nn.Module):
         residual_hidden_states=None,
     ):
         output_states = []
-        print("resnet size:" + str(len(self.resnets)))
-        print("X at initial: ", x.shape)
+        # print("resnet size:" + str(len(self.resnets)))
+        # print("X at initial: ", x.shape)
         for i in range(len(self.resnets)):
             if residual_hidden_states is not None:
-                print(len(residual_hidden_states))
+                # print(len(residual_hidden_states))
                 hid = residual_hidden_states.pop()
-                print([len(r) for r in hid])
+                # print([len(r) for r in hid])
                 x = mx.concatenate([x, hid], axis=-1)
-                print(x.shape)
+                # print(x.shape)
 
             x = self.resnets[i](x, temb)
 
@@ -449,9 +449,9 @@ class UNetModel(nn.Module):
             )
             residuals.extend(res)
 
-            print("down-sample layer: ", i)
-            print("res: ", [len(r) for r in res])
-            print(len(residuals))
+            # print("down-sample layer: ", i)
+            # print("res: ", [len(r) for r in res])
+            # print(len(residuals))
 
         # Run the middle part of the unet
         x = self.mid_blocks[0](x, temb)
@@ -462,9 +462,9 @@ class UNetModel(nn.Module):
 
         # Run the upsampling part of the unet
         for i, block in enumerate(self.up_blocks):
-            print("(store cache) up-sample layer: ",
-                  len(self.up_blocks) - i - 1)
-            print("X: ", x.shape)
+            # print("(store cache) up-sample layer: ",
+            #       len(self.up_blocks) - i - 1)
+            # print("X: ", x.shape)
 
             x, _ = block(
                 x,
