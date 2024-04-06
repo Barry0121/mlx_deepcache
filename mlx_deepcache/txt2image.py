@@ -34,8 +34,6 @@ if __name__ == "__main__":
                         help="N, number of interval to use the cached output.")
     parser.add_argument("--cache_layer_id", type=int, default=1,
                         help="m, unet branch to apply our cache.")
-    # parser.add_argument("--cache_block_id", type=int,
-    #                     help="Id of the up-sampling block to cache.")
     parser.add_argument("--uniform", type=bool, default=False,
                         help="Sampling strategy for N step caching.")
     parser.add_argument("--center", type=int, default=15,

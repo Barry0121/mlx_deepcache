@@ -185,6 +185,7 @@ class StableDiffusion:
         # Perform the denoising loop
         yield from self._denoising_loop(
             x_T, self.sampler.max_time, conditioning, num_steps, cfg_weight, None,
+            # deepcache arguments
             cache_layer_id,
             cache_interval,
             uniform,
@@ -202,6 +203,12 @@ class StableDiffusion:
         cfg_weight: float = 7.5,
         negative_text: str = "",
         seed=None,
+        # deepcache arguments
+        cache_layer_id: int = None,
+        cache_interval: int = None,
+        uniform: bool = True,
+        center: int = None,
+        power: float = None,
     ):
         # Set the PRNG state
         seed = int(time.time()) if seed is None else seed
@@ -224,7 +231,13 @@ class StableDiffusion:
 
         # Perform the denoising loop
         yield from self._denoising_loop(
-            x_T, start_step, conditioning, num_steps, cfg_weight
+            x_T, start_step, conditioning, num_steps, cfg_weight,
+            # deepcache arguments
+            cache_layer_id,
+            cache_interval,
+            uniform,
+            center,
+            power,
         )
 
     def decode(self, x_t):
@@ -300,6 +313,12 @@ class StableDiffusionXL(StableDiffusion):
         negative_text: str = "",
         latent_size: Tuple[int] = (64, 64),
         seed=None,
+        # deepcache arguments
+        cache_layer_id: int = None,
+        cache_interval: int = None,
+        uniform: bool = True,
+        center: int = None,
+        power: float = None,
     ):
         # Set the PRNG state
         seed = int(time.time()) if seed is None else seed
@@ -327,7 +346,12 @@ class StableDiffusionXL(StableDiffusion):
             conditioning,
             num_steps,
             cfg_weight,
-            text_time=text_time,
+            # deepcache arguments
+            cache_layer_id,
+            cache_interval,
+            uniform,
+            center,
+            power
         )
 
     def generate_latents_from_image(
@@ -340,6 +364,12 @@ class StableDiffusionXL(StableDiffusion):
         cfg_weight: float = 0.0,
         negative_text: str = "",
         seed=None,
+        # deepcache arguments
+        cache_layer_id: int = None,
+        cache_interval: int = None,
+        uniform: bool = True,
+        center: int = None,
+        power: float = None,
     ):
         # Set the PRNG state
         seed = seed or int(time.time())
@@ -367,5 +397,12 @@ class StableDiffusionXL(StableDiffusion):
 
         # Perform the denoising loop
         yield from self._denoising_loop(
-            x_T, start_step, conditioning, num_steps, cfg_weight, text_time=text_time
+            x_T, start_step, conditioning, num_steps, cfg_weight,
+            # deepcache arguments
+            cache_layer_id,
+            cache_interval,
+            uniform,
+            center,
+            power,
+            text_time=text_time
         )

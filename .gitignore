@@ -161,3 +161,6 @@ cython_debug/
 
 # MACOS
 .DS_STORE
+
+# Don't push pictures
+*.png
