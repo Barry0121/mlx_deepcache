@@ -124,7 +124,6 @@ class StableDiffusion:
     ):
         x_t = x_T
         cache_features = None  # Store deepcache features
-
         # Generate deepcache schedule according to input arguments
         if cache_interval == 1:
             interval_seq = mx.arange(num_steps)
@@ -186,11 +185,11 @@ class StableDiffusion:
         yield from self._denoising_loop(
             x_T, self.sampler.max_time, conditioning, num_steps, cfg_weight, None,
             # deepcache arguments
-            cache_layer_id,
-            cache_interval,
-            uniform,
-            center,
-            power,
+            cache_layer_id=cache_layer_id,
+            cache_interval=cache_interval,
+            uniform=uniform,
+            center=center,
+            power=power
         )
 
     def generate_latents_from_image(
@@ -346,12 +345,13 @@ class StableDiffusionXL(StableDiffusion):
             conditioning,
             num_steps,
             cfg_weight,
+            text_time=None,
             # deepcache arguments
-            cache_layer_id,
-            cache_interval,
-            uniform,
-            center,
-            power
+            cache_layer_id=cache_layer_id,
+            cache_interval=cache_interval,
+            uniform=uniform,
+            center=center,
+            power=power
         )
 
     def generate_latents_from_image(
