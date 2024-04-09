@@ -1,0 +1,60 @@
+Execution time for 7: 168000.0 milliseconds
+Output of 7:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      5.697GB
+==========================================
+Execution time for 8: 174000.0 milliseconds
+Output of 8:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      4.742GB
+==========================================
+Execution time for 9: 176000.0 milliseconds
+Output of 9:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      3.583GB
+==========================================
+Execution time for 10: 178000.0 milliseconds
+Output of 10:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      3.332GB
+==========================================
+Execution time for 11: 176000.0 milliseconds
+Output of 11:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      5.697GB
+==========================================
+Execution time for 12: 174000.0 milliseconds
+Output of 12:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      5.197GB
+==========================================
+Execution time for 1: 68000.0 milliseconds
+Output of 1:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      3.457GB
+==========================================
+Execution time for 2: 108000.0 milliseconds
+Output of 2:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      3.708GB
+==========================================
+Execution time for 3: 170000.0 milliseconds
+Output of 3:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      3.310GB
+==========================================
+Execution time for 4: 169000.0 milliseconds
+Output of 4:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      5.697GB
+==========================================
+Execution time for 5: 175000.0 milliseconds
+Output of 5:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      5.322GB
+==========================================
+Execution time for 6: 178000.0 milliseconds
+Output of 6:
+Peak memory used for the unet: 2.869GB
+Peak memory used overall:      3.457GB
+==========================================

@@ -1,0 +1,20 @@
+Execution time for 1: 137000.0 milliseconds
+Output of 1:
+Peak memory used for the unet: 4.352GB
+Peak memory used overall:      5.385GB
+==========================================
+Execution time for 2: 173000.0 milliseconds
+Output of 2:
+Peak memory used for the unet: 4.408GB
+Peak memory used overall:      6.192GB
+==========================================
+Execution time for 4: 252000.0 milliseconds
+Output of 4:
+Peak memory used for the unet: 4.620GB
+Peak memory used overall:      6.198GB
+==========================================
+Execution time for 10: 681000.0 milliseconds
+Output of 10:
+Peak memory used for the unet: 6.132GB
+Peak memory used overall:      6.215GB
+==========================================
