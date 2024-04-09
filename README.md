@@ -17,6 +17,16 @@ Our goal is to use this as a proof-of-concept to demonstrate how MLX can be comb
 
 ## Running our Code
 
+### Setup
+
+All dependencies are in the `requirements.txt` file located at the root directory.
+
+You can install them with:
+
+```
+pip install -r requirments.txt
+```
+
 ### Structure
 
 We proved the original MLX Stable Diffusion demonstration in `mlx_stable_diffusion`, and our implementation with DeepCache based on the official demo in `mlx_deepcache`.
