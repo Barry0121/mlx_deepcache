@@ -29,6 +29,17 @@ if __name__ == "__main__":
     parser.add_argument("--preload-models", action="store_true")
     parser.add_argument("--output", default="out.png")
     parser.add_argument("--verbose", "-v", action="store_true")
+    # DeepCache Hyperparameter
+    parser.add_argument("--cache_interval", type=int, default=5,
+                        help="N, number of interval to use the cached output.")
+    parser.add_argument("--cache_layer_id", type=int, default=2,
+                        help="m, unet branch to apply our cache.")
+    parser.add_argument("--uniform", type=bool, default=False,
+                        help="Sampling strategy for N step caching.")
+    parser.add_argument("--center", type=int, default=15,
+                        help="Center timestep of the frequency distribution.")
+    parser.add_argument("--pow", type=float, default=1.4,
+                        help="Power value to determine the shape of the frequency distribution.")
     args = parser.parse_args()
 
     # Load the models
@@ -68,8 +79,10 @@ if __name__ == "__main__":
     # Make sure image shape is divisible by 64
     W, H = (dim - dim % 64 for dim in (img.width, img.height))
     if W != img.width or H != img.height:
-        print(f"Warning: image shape is not divisible by 64, downsampling to {W}x{H}")
-        img = img.resize((W, H), Image.NEAREST)  # use desired downsampling filter
+        print(
+            f"Warning: image shape is not divisible by 64, downsampling to {W}x{H}")
+        # use desired downsampling filter
+        img = img.resize((W, H), Image.NEAREST)
 
     img = mx.array(np.array(img))
     img = (img[:, :, :3].astype(mx.float32) / 255) * 2 - 1
@@ -83,6 +96,12 @@ if __name__ == "__main__":
         cfg_weight=args.cfg,
         num_steps=args.steps,
         negative_text=args.negative_prompt,
+        # deepcache arguments
+        cache_layer_id=args.cache_layer_id,
+        cache_interval=args.cache_interval,
+        uniform=args.uniform,
+        center=args.center,
+        power=args.pow
     )
     for x_t in tqdm(latents, total=int(args.steps * args.strength)):
         mx.eval(x_t)
@@ -102,7 +121,7 @@ if __name__ == "__main__":
     # Decode them into images
     decoded = []
     for i in tqdm(range(0, args.n_images, args.decoding_batch_size)):
-        decoded.append(sd.decode(x_t[i : i + args.decoding_batch_size]))
+        decoded.append(sd.decode(x_t[i: i + args.decoding_batch_size]))
         mx.eval(decoded[-1])
     peak_mem_overall = mx.metal.get_peak_memory() / 1024**3
 
@@ -110,7 +129,8 @@ if __name__ == "__main__":
     x = mx.concatenate(decoded, axis=0)
     x = mx.pad(x, [(0, 0), (8, 8), (8, 8), (0, 0)])
     B, H, W, C = x.shape
-    x = x.reshape(args.n_rows, B // args.n_rows, H, W, C).transpose(0, 2, 1, 3, 4)
+    x = x.reshape(args.n_rows, B // args.n_rows,
+                  H, W, C).transpose(0, 2, 1, 3, 4)
     x = x.reshape(args.n_rows * H, B // args.n_rows * W, C)
     x = (x * 255).astype(mx.uint8)
 

@@ -397,12 +397,11 @@ class StableDiffusionXL(StableDiffusion):
 
         # Perform the denoising loop
         yield from self._denoising_loop(
-            x_T, start_step, conditioning, num_steps, cfg_weight,
+            x_T=x_T, T=start_step, conditioning=conditioning, num_steps=num_steps, cfg_weight=cfg_weight, text_time=text_time,
             # deepcache arguments
-            cache_layer_id,
-            cache_interval,
-            uniform,
-            center,
-            power,
-            text_time=text_time
+            cache_layer_id=cache_layer_id,
+            cache_interval=cache_interval,
+            uniform=uniform,
+            center=center,
+            power=power
         )
